@@ -13,11 +13,12 @@ export default function RoomPage({
   const { channelName } = use(params);
   const searchParams = useSearchParams();
   const userName = searchParams.get("user") || "Guest";
+  const uid = parseInt(searchParams.get("uid") || "0", 10) || Math.floor(Math.random() * 100000) + 1;
   const router = useRouter();
   const [left, setLeft] = useState(false);
 
   const client = useMemo(
-    () => AgoraRTC.createClient({ mode: "rtc", codec: "vp8" }),
+    () => AgoraRTC.createClient({ mode: "rtc", codec: "h264" }),
     [],
   );
 
@@ -40,6 +41,7 @@ export default function RoomPage({
       <VideoRoom
         channelName={decodeURIComponent(channelName)}
         userName={userName}
+        uid={uid}
         onLeave={() => setLeft(true)}
       />
     </AgoraRTCProvider>

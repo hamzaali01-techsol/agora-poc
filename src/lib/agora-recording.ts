@@ -11,8 +11,44 @@ const AGORA_CUSTOMER_SECRET = process.env.AGORA_CUSTOMER_SECRET!;
 const S3_BUCKET = process.env.S3_BUCKET!;
 const S3_ACCESS_KEY = process.env.S3_ACCESS_KEY!;
 const S3_SECRET_KEY = process.env.S3_SECRET_KEY!;
-const S3_REGION = parseInt(process.env.S3_REGION ?? "0", 10); // 0=US_EAST_1, 1=US_EAST_2, etc.
 const S3_FILE_PREFIX = process.env.S3_FILE_PREFIX ?? "agora-recordings";
+
+// Agora Cloud Recording uses numeric region codes for AWS S3
+// Official mapping from https://github.com/agoraio/docs-source/blob/staging/cloud-recording/reference/region-vendor.mdx
+const AWS_REGION_MAP: Record<string, number> = {
+  "us-east-1": 0,
+  "us-east-2": 1,
+  "us-west-1": 2,
+  "us-west-2": 3,
+  "eu-west-1": 4,
+  "eu-west-2": 5,
+  "eu-west-3": 6,
+  "eu-central-1": 7,
+  "ap-southeast-1": 8,
+  "ap-southeast-2": 9,
+  "ap-northeast-1": 10,
+  "ap-northeast-2": 11,
+  "sa-east-1": 12,
+  "ca-central-1": 13,
+  "ap-south-1": 14,
+  "cn-north-1": 15,
+  "cn-northwest-1": 16,
+  "af-south-1": 18,
+  "ap-east-1": 19,
+  "ap-northeast-3": 20,
+  "eu-north-1": 21,
+  "me-south-1": 22,
+  "ap-southeast-3": 24,
+  "eu-south-1": 25,
+};
+
+function getS3Region(): number {
+  const raw = process.env.S3_REGION ?? "0";
+  // Support both numeric ("0") and string ("eu-north-1") formats
+  if (AWS_REGION_MAP[raw] !== undefined) return AWS_REGION_MAP[raw];
+  const num = parseInt(raw, 10);
+  return isNaN(num) ? 0 : num;
+}
 
 const BASE_URL = `https://api.agora.io/v1/apps/${AGORA_APP_ID}/cloud_recording`;
 
@@ -78,11 +114,11 @@ export async function start(
       },
       storageConfig: {
         vendor: 1, // AWS S3
-        region: S3_REGION,
+        region: getS3Region(),
         bucket: S3_BUCKET,
         accessKey: S3_ACCESS_KEY,
         secretKey: S3_SECRET_KEY,
-        fileNamePrefix: S3_FILE_PREFIX.split("/").filter(Boolean),
+        fileNamePrefix: [...S3_FILE_PREFIX.split("/").filter(Boolean), channelName],
       },
     },
   };
@@ -100,6 +136,63 @@ export async function start(
 
   return res.json() as Promise<{ sid: string; resourceId: string }>;
 }
+
+// /** Step 2b: Start composite recording with S3 upload */
+// export async function startComposite(
+//   channelName: string,
+//   uid: string,
+//   resourceId: string,
+//   token?: string,
+// ) {
+//   const url = `${BASE_URL}/resourceid/${resourceId}/mode/mix/start`;
+//
+//   const body = {
+//     uid,
+//     cname: channelName,
+//     clientRequest: {
+//       token: token || undefined,
+//       recordingConfig: {
+//         maxIdleTime: 30,
+//         streamTypes: 2, // audio + video
+//         channelType: 0, // communication
+//         videoStreamType: 0, // high stream
+//         subscribeUidGroup: 0,
+//         transcodingConfig: {
+//           width: 1920,
+//           height: 1080,
+//           bitrate: 3150,
+//           fps: 30,
+//           mixedVideoLayout: 1, // best fit: auto grid based on user count
+//           backgroundColor: "#141414",
+//         },
+//       },
+//       recordingFileConfig: {
+//         avFileType: ["hls", "mp4"],
+//       },
+//       storageConfig: {
+//         vendor: 1, // AWS S3
+//         region: getS3Region(),
+//         bucket: S3_BUCKET,
+//         accessKey: S3_ACCESS_KEY,
+//         secretKey: S3_SECRET_KEY,
+//         fileNamePrefix: S3_FILE_PREFIX.split("/").filter(Boolean),
+//       },
+//     },
+//   };
+//
+//   const res = await fetch(url, {
+//     method: "POST",
+//     headers,
+//     body: JSON.stringify(body),
+//   });
+//
+//   if (!res.ok) {
+//     const text = await res.text();
+//     throw new Error(`Agora start failed (${res.status}): ${text}`);
+//   }
+//
+//   return res.json() as Promise<{ sid: string; resourceId: string }>;
+// }
 
 /** Step 3: Stop recording */
 export async function stop(

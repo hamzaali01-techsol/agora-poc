@@ -6,12 +6,13 @@ import { useRouter } from "next/navigation";
 export default function Home() {
   const [channelName, setChannelName] = useState("");
   const [userName, setUserName] = useState("");
+  const [userId, setUserId] = useState("");
   const router = useRouter();
 
   const handleJoin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!channelName.trim()) return;
-    const params = new URLSearchParams({ user: userName || "Guest" });
+    if (!channelName.trim() || !userId.trim()) return;
+    const params = new URLSearchParams({ user: userName || "Guest", uid: userId.trim() });
     router.push(`/room/${encodeURIComponent(channelName.trim())}?${params}`);
   };
 
@@ -41,6 +42,21 @@ export default function Home() {
           </div>
 
           <div>
+            <label htmlFor="userId" className="mb-1 block text-sm text-gray-400">
+              User ID <span className="text-red-400">*</span>
+            </label>
+            <input
+              id="userId"
+              type="number"
+              required
+              placeholder="Enter a numeric user ID"
+              value={userId}
+              onChange={(e) => setUserId(e.target.value)}
+              className="w-full rounded-lg border border-gray-700 bg-gray-900 px-4 py-3 text-white placeholder-gray-500 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
             <label htmlFor="channelName" className="mb-1 block text-sm text-gray-400">
               Channel Name <span className="text-red-400">*</span>
             </label>
@@ -57,7 +73,7 @@ export default function Home() {
 
           <button
             type="submit"
-            disabled={!channelName.trim()}
+            disabled={!channelName.trim() || !userId.trim()}
             className="w-full rounded-lg bg-blue-600 py-3 font-medium text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
           >
             Join Meeting

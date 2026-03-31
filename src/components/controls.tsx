@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef } from "react";
 import AgoraRTC from "agora-rtc-react";
-import type { ILocalVideoTrack } from "agora-rtc-sdk-ng";
-import { useRTCClient } from "agora-rtc-react";
+import type { IAgoraRTCClient, ILocalVideoTrack, ILocalAudioTrack } from "agora-rtc-sdk-ng";
+import { AGORA_APP_ID } from "@/lib/agora-config";
 import {
   acquireRecording,
   startRecording,
@@ -94,7 +94,7 @@ interface ControlsProps {
   onLeave: () => void;
   channelName: string;
   uid: number;
-  onScreenShareTrack: (track: ILocalVideoTrack | null) => void;
+  onScreenShare: (track: ILocalVideoTrack | null, screenUid: number | null) => void;
   isScreenSharing: boolean;
 }
 
@@ -106,90 +106,144 @@ export default function Controls({
   onLeave,
   channelName,
   uid,
-  onScreenShareTrack,
+  onScreenShare,
   isScreenSharing,
 }: ControlsProps) {
-  const client = useRTCClient();
-  const [recording, setRecording] = useState(false);
+  const storageKey = `agora-recording:${channelName}`;
+  const [recording, setRecording] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem(storageKey) !== null;
+  });
   const [recordingLoading, setRecordingLoading] = useState(false);
-  const recordingRef = useRef<RecordingState | null>(null);
+
+  // Dual-client screen share refs
+  const screenClientRef = useRef<IAgoraRTCClient | null>(null);
   const screenTrackRef = useRef<ILocalVideoTrack | null>(null);
+  const screenAudioRef = useRef<ILocalAudioTrack | null>(null);
 
-  // Cleanup screen track on unmount
-  useEffect(() => {
-    return () => {
-      if (screenTrackRef.current) {
-        screenTrackRef.current.close();
+  // ── Screen sharing (dual-client approach) ──
+
+  const stopScreen = useCallback(async () => {
+    screenTrackRef.current?.close();
+    screenAudioRef.current?.close();
+    screenTrackRef.current = null;
+    screenAudioRef.current = null;
+    try { await screenClientRef.current?.leave(); } catch { /* ignore */ }
+    screenClientRef.current = null;
+    onScreenShare(null, null);
+  }, [onScreenShare]);
+
+  const startScreen = useCallback(async () => {
+    try {
+      // 1. Create screen track (with optional system audio)
+      const screenResult = await AgoraRTC.createScreenVideoTrack(
+        { encoderConfig: "1080p_1" },
+        "auto",
+      );
+
+      let screenVideoTrack: ILocalVideoTrack;
+      let screenAudioTrack: ILocalAudioTrack | null = null;
+      if (Array.isArray(screenResult)) {
+        screenVideoTrack = screenResult[0] as unknown as ILocalVideoTrack;
+        screenAudioTrack = screenResult[1] as unknown as ILocalAudioTrack;
+      } else {
+        screenVideoTrack = screenResult as unknown as ILocalVideoTrack;
       }
-    };
-  }, []);
 
-  // ── Screen sharing ──
+      // 2. Screen UID = main UID + 1,000,000 (convention from reference)
+      const screenUid = uid + 1_000_000;
+
+      // 3. Fetch token for screen UID
+      const res = await fetch(
+        `/api/token?channel=${encodeURIComponent(channelName)}&uid=${screenUid}`,
+      );
+      const { token } = await res.json();
+
+      // 4. Create & join a separate client for screen sharing
+      const screenClient = AgoraRTC.createClient({ mode: "rtc", codec: "h264" });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (screenClient as any).join(AGORA_APP_ID, channelName, token, screenUid);
+
+      // 5. Publish screen track(s)
+      const tracksToPublish = [screenVideoTrack];
+      if (screenAudioTrack) tracksToPublish.push(screenAudioTrack as never);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (screenClient as any).publish(tracksToPublish);
+
+      screenClientRef.current = screenClient as unknown as IAgoraRTCClient;
+      screenTrackRef.current = screenVideoTrack;
+      screenAudioRef.current = screenAudioTrack;
+      onScreenShare(screenVideoTrack, screenUid);
+
+      // Handle browser's native "Stop sharing" button
+      screenVideoTrack.on("track-ended", stopScreen);
+    } catch (err) {
+      // User cancelled the picker or other error
+      if ((err as { name?: string }).name !== "NotAllowedError") {
+        console.error("Screen share error:", err);
+      }
+    }
+  }, [channelName, uid, onScreenShare, stopScreen]);
 
   const toggleScreenShare = useCallback(async () => {
-    if (isScreenSharing && screenTrackRef.current) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await client.unpublish([screenTrackRef.current] as any);
-      screenTrackRef.current.close();
-      screenTrackRef.current = null;
-      onScreenShareTrack(null);
-      return;
+    if (isScreenSharing) {
+      await stopScreen();
+    } else {
+      await startScreen();
     }
-
-    try {
-      const screenTrack = await AgoraRTC.createScreenVideoTrack(
-        { encoderConfig: "1080p_1" },
-        "disable",
-      );
-      const videoTrack = Array.isArray(screenTrack) ? screenTrack[0] : screenTrack;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await client.publish([videoTrack] as any);
-      screenTrackRef.current = videoTrack as ILocalVideoTrack;
-      onScreenShareTrack(videoTrack as ILocalVideoTrack);
-
-      // Stop sharing when the browser's native "Stop sharing" is clicked
-      videoTrack.on("track-ended", async () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        await client.unpublish([videoTrack] as any);
-        videoTrack.close();
-        screenTrackRef.current = null;
-        onScreenShareTrack(null);
-      });
-    } catch (err) {
-      // User cancelled the screen share picker
-      console.log("Screen share cancelled:", err);
-    }
-  }, [client, isScreenSharing, onScreenShareTrack]);
+  }, [isScreenSharing, stopScreen, startScreen]);
 
   // ── Recording ──
 
-  const toggleRecording = useCallback(async () => {
+  const handleStartRecording = useCallback(async () => {
     setRecordingLoading(true);
     try {
-      if (recording && recordingRef.current) {
-        await stopRecording(
-          channelName,
-          String(uid),
-          recordingRef.current.resourceId,
-          recordingRef.current.sid,
-        );
-        recordingRef.current = null;
-        setRecording(false);
-      } else {
-        // The recording bot UID must differ from any participant
-        const recordingUid = String(uid + 100000);
-        const { resourceId } = await acquireRecording(channelName, recordingUid);
-        const { sid } = await startRecording(channelName, recordingUid, resourceId);
-        recordingRef.current = { resourceId, sid };
-        setRecording(true);
-      }
+      const recordingUid = String(uid + 100000);
+      const tokenRes = await fetch(
+        `/api/token?channel=${encodeURIComponent(channelName)}&uid=${recordingUid}`,
+      );
+      const { token: recToken } = await tokenRes.json();
+      const acquireResult = await acquireRecording(channelName, recordingUid);
+      console.log("[Recording] Acquire response:", JSON.stringify(acquireResult, null, 2));
+      const startResult = await startRecording(channelName, recordingUid, acquireResult.resourceId, recToken);
+      console.log("[Recording] Start response:", JSON.stringify(startResult, null, 2));
+      const state: RecordingState = { resourceId: acquireResult.resourceId, sid: startResult.sid };
+      localStorage.setItem(storageKey, JSON.stringify(state));
+      setRecording(true);
     } catch (err) {
       console.error("Recording error:", err);
       alert(`Recording error: ${err instanceof Error ? err.message : err}`);
     } finally {
       setRecordingLoading(false);
     }
-  }, [recording, channelName, uid]);
+  }, [channelName, uid, storageKey]);
+
+  const handleStopRecording = useCallback(async () => {
+    setRecordingLoading(true);
+    try {
+      const raw = localStorage.getItem(storageKey);
+      if (!raw) {
+        setRecording(false);
+        return;
+      }
+      const state: RecordingState = JSON.parse(raw);
+      const recordingUid = String(uid + 100000);
+      const stopResult = await stopRecording(
+        channelName,
+        recordingUid,
+        state.resourceId,
+        state.sid,
+      );
+      console.log("[Recording] Stop response:", JSON.stringify(stopResult, null, 2));
+      localStorage.removeItem(storageKey);
+      setRecording(false);
+    } catch (err) {
+      console.error("Recording error:", err);
+      alert(`Recording error: ${err instanceof Error ? err.message : err}`);
+    } finally {
+      setRecordingLoading(false);
+    }
+  }, [channelName, uid, storageKey]);
 
   return (
     <div className="flex items-center justify-center gap-3 rounded-xl bg-gray-900/80 px-6 py-3 backdrop-blur">
@@ -217,18 +271,33 @@ export default function Controls({
         <ScreenShareIcon />
       </button>
 
-      <button
-        onClick={toggleRecording}
-        disabled={recordingLoading}
-        className={`rounded-full p-3 transition ${recording ? "bg-red-600 text-white hover:bg-red-500" : "bg-gray-700 hover:bg-gray-600"} disabled:opacity-50`}
-        title={recording ? "Stop recording" : "Start recording"}
-      >
-        {recordingLoading ? (
-          <span className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
-        ) : (
-          <RecordIcon recording={recording} />
-        )}
-      </button>
+      {!recording ? (
+        <button
+          onClick={handleStartRecording}
+          disabled={recordingLoading}
+          className="rounded-full bg-gray-700 p-3 transition hover:bg-gray-600 disabled:opacity-50"
+          title="Start recording"
+        >
+          {recordingLoading ? (
+            <span className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+          ) : (
+            <RecordIcon recording={false} />
+          )}
+        </button>
+      ) : (
+        <button
+          onClick={handleStopRecording}
+          disabled={recordingLoading}
+          className="rounded-full bg-red-600 p-3 text-white transition hover:bg-red-500 disabled:opacity-50"
+          title="Stop recording"
+        >
+          {recordingLoading ? (
+            <span className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+          ) : (
+            <RecordIcon recording={true} />
+          )}
+        </button>
+      )}
 
       <div className="mx-2 h-8 w-px bg-gray-700" />
 
