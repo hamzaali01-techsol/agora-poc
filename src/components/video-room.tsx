@@ -10,7 +10,7 @@ import {
   useRTCClient,
 } from "agora-rtc-react";
 import AgoraRTC from "agora-rtc-react";
-import type { ICameraVideoTrack, IMicrophoneAudioTrack, ILocalVideoTrack } from "agora-rtc-sdk-ng";
+import type { ICameraVideoTrack, IMicrophoneAudioTrack, ILocalVideoTrack } from "agora-rtc-react";
 import { AGORA_APP_ID } from "@/lib/agora-config";
 import Controls from "./controls";
 

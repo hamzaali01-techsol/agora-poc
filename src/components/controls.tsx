@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef } from "react";
 import AgoraRTC from "agora-rtc-react";
-import type { IAgoraRTCClient, ILocalVideoTrack, ILocalAudioTrack } from "agora-rtc-sdk-ng";
+import type { IAgoraRTCClient, ILocalVideoTrack, ILocalAudioTrack } from "agora-rtc-react";
 import { AGORA_APP_ID } from "@/lib/agora-config";
 import {
   acquireRecording,
