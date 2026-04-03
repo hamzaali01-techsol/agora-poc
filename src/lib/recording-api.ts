@@ -18,11 +18,12 @@ export async function startRecording(
   uid: string,
   resourceId: string,
   token?: string,
+  mode: "mix" | "individual" = "mix",
 ) {
   const res = await fetch("/api/recording/start", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ channelName, uid, resourceId, token }),
+    body: JSON.stringify({ channelName, uid, resourceId, token, mode }),
   });
   if (!res.ok) throw new Error(await res.text());
   return res.json() as Promise<{ sid: string; resourceId: string }>;
@@ -33,11 +34,12 @@ export async function stopRecording(
   uid: string,
   resourceId: string,
   sid: string,
+  mode: "mix" | "individual" = "mix",
 ) {
   const res = await fetch("/api/recording/stop", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ channelName, uid, resourceId, sid }),
+    body: JSON.stringify({ channelName, uid, resourceId, sid, mode }),
   });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
@@ -46,8 +48,9 @@ export async function stopRecording(
 export async function queryRecording(
   resourceId: string,
   sid: string,
+  mode: "mix" | "individual" = "mix",
 ) {
-  const params = new URLSearchParams({ resourceId, sid });
+  const params = new URLSearchParams({ resourceId, sid, mode });
   const res = await fetch(`/api/recording/query?${params}`);
   if (!res.ok) throw new Error(await res.text());
   return res.json();

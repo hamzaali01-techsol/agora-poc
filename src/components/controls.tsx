@@ -137,7 +137,7 @@ export default function Controls({
     try {
       // 1. Create screen track (with optional system audio)
       const screenResult = await AgoraRTC.createScreenVideoTrack(
-        { encoderConfig: "1080p_1" },
+        { encoderConfig: "720p_2" },
         "auto",
       );
 
@@ -198,16 +198,49 @@ export default function Controls({
   const handleStartRecording = useCallback(async () => {
     setRecordingLoading(true);
     try {
-      const recordingUid = String(uid + 100000);
-      const tokenRes = await fetch(
-        `/api/token?channel=${encodeURIComponent(channelName)}&uid=${recordingUid}`,
-      );
-      const { token: recToken } = await tokenRes.json();
-      const acquireResult = await acquireRecording(channelName, recordingUid);
-      console.log("[Recording] Acquire response:", JSON.stringify(acquireResult, null, 2));
-      const startResult = await startRecording(channelName, recordingUid, acquireResult.resourceId, recToken);
-      console.log("[Recording] Start response:", JSON.stringify(startResult, null, 2));
-      const state: RecordingState = { resourceId: acquireResult.resourceId, sid: startResult.sid };
+      // 1. Generate unique UIDs for both recording bots to avoid task conflicts
+      // We add a random factor (between 1-10,000) on top of the base offset
+      const sessionOffset = Math.floor(Math.random() * 10000);
+      const mixUid = uid + 100000 + sessionOffset;
+      // const indUid = uid + 200000 + sessionOffset;
+
+      // 2. Fetch tokens for both UIDs
+      /*
+      const [mixTokenRes, indTokenRes] = await Promise.all([
+        fetch(`/api/token?channel=${encodeURIComponent(channelName)}&uid=${mixUid}`),
+        fetch(`/api/token?channel=${encodeURIComponent(channelName)}&uid=${indUid}`),
+      ]);
+      const [{ token: mixToken }, { token: indToken }] = await Promise.all([
+        mixTokenRes.json(),
+        indTokenRes.json(),
+      ]);
+      */
+      const mixTokenRes = await fetch(`/api/token?channel=${encodeURIComponent(channelName)}&uid=${mixUid}`);
+      const { token: mixToken } = await mixTokenRes.json();
+
+      // 3. Dual Acquire
+      /*
+      const [mixAcquire, indAcquire] = await Promise.all([
+        acquireRecording(channelName, String(mixUid)),
+        acquireRecording(channelName, String(indUid)),
+      ]);
+      */
+      const mixAcquire = await acquireRecording(channelName, String(mixUid));
+
+      // 4. Dual Start
+      /*
+      const [mixStart, indStart] = await Promise.all([
+        startRecording(channelName, String(mixUid), mixAcquire.resourceId, mixToken, "mix"),
+        startRecording(channelName, String(indUid), indAcquire.resourceId, indToken, "individual"),
+      ]);
+      */
+      const mixStart = await startRecording(channelName, String(mixUid), mixAcquire.resourceId, mixToken, "mix");
+
+      const state = {
+        mix: { resourceId: mixAcquire.resourceId, sid: mixStart.sid, uid: mixUid },
+        // ind: { resourceId: indAcquire.resourceId, sid: indStart.sid, uid: indUid },
+      };
+
       localStorage.setItem(storageKey, JSON.stringify(state));
       setRecording(true);
     } catch (err) {
@@ -226,15 +259,17 @@ export default function Controls({
         setRecording(false);
         return;
       }
-      const state: RecordingState = JSON.parse(raw);
-      const recordingUid = String(uid + 100000);
-      const stopResult = await stopRecording(
-        channelName,
-        recordingUid,
-        state.resourceId,
-        state.sid,
-      );
-      console.log("[Recording] Stop response:", JSON.stringify(stopResult, null, 2));
+      const state = JSON.parse(raw);
+
+      // Stop both sessions
+      /*
+      await Promise.all([
+        stopRecording(channelName, String(state.mix.uid), state.mix.resourceId, state.mix.sid, "mix"),
+        stopRecording(channelName, String(state.ind.uid), state.ind.resourceId, state.ind.sid, "individual"),
+      ]);
+      */
+      await stopRecording(channelName, String(state.mix.uid), state.mix.resourceId, state.mix.sid, "mix");
+
       localStorage.removeItem(storageKey);
       setRecording(false);
     } catch (err) {

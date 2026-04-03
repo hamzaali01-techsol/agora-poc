@@ -88,7 +88,8 @@ export async function acquire(channelName: string, uid: string) {
 }
 
 /** Step 2: Start individual recording with S3 upload */
-export async function start(
+/*
+export async function startIndividual(
   channelName: string,
   uid: string,
   resourceId: string,
@@ -118,7 +119,86 @@ export async function start(
         bucket: S3_BUCKET,
         accessKey: S3_ACCESS_KEY,
         secretKey: S3_SECRET_KEY,
-        fileNamePrefix: [...S3_FILE_PREFIX.split("/").filter(Boolean), channelName],
+        fileNamePrefix: S3_FILE_PREFIX.split("/").filter(Boolean),
+      },
+    },
+  };
+
+  const res = await fetch(url, {
+    method: "POST",
+    headers,
+    body: JSON.stringify(body),
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Agora individual start failed (${res.status}): ${text}`);
+  }
+
+  return res.json() as Promise<{ sid: string; resourceId: string }>;
+}
+*/
+
+/** Step 2b: Start composite recording with S3 upload */
+export async function startComposite(
+  channelName: string,
+  uid: string,
+  resourceId: string,
+  token?: string,
+) {
+  const url = `${BASE_URL}/resourceid/${resourceId}/mode/mix/start`;
+
+  const body = {
+    uid,
+    cname: channelName,
+    clientRequest: {
+      token: token || undefined,
+      recordingConfig: {
+        maxIdleTime: 30,
+        streamTypes: 2, // audio + video
+        channelType: 0, // communication
+        videoStreamType: 0, // high stream
+        subscribeUidGroup: 0,
+        transcodingConfig: {
+          width: 1920,
+          height: 1080,
+          bitrate: 6000,
+          fps: 30,
+          mixedVideoLayout: 3, // Customized Layout
+          backgroundColor: "#141414",
+          layoutConfig: [
+            {
+              // Participant 1 (e.g., Camera) - Left half
+              x_axis: 0.0,
+              y_axis: 0.0,
+              width: 0.5,
+              height: 1.0,
+              alpha: 1.0,
+              render_mode: 1, // 1: Fit (Scaled to fit)
+            },
+            {
+              // Participant 2 (e.g., Screen Share) - Right half
+              x_axis: 0.5,
+              y_axis: 0.0,
+              width: 0.5,
+              height: 1.0,
+              alpha: 1.0,
+              render_mode: 1,
+            }
+          ],
+        },
+        
+      },
+      recordingFileConfig: {
+        avFileType: ["hls", "mp4"],
+      },
+      storageConfig: {
+        vendor: 1, // AWS S3
+        region: getS3Region(),
+        bucket: S3_BUCKET,
+        accessKey: S3_ACCESS_KEY,
+        secretKey: S3_SECRET_KEY,
+        fileNamePrefix: S3_FILE_PREFIX.split("/").filter(Boolean),
       },
     },
   };
@@ -137,71 +217,15 @@ export async function start(
   return res.json() as Promise<{ sid: string; resourceId: string }>;
 }
 
-// /** Step 2b: Start composite recording with S3 upload */
-// export async function startComposite(
-//   channelName: string,
-//   uid: string,
-//   resourceId: string,
-//   token?: string,
-// ) {
-//   const url = `${BASE_URL}/resourceid/${resourceId}/mode/mix/start`;
-//
-//   const body = {
-//     uid,
-//     cname: channelName,
-//     clientRequest: {
-//       token: token || undefined,
-//       recordingConfig: {
-//         maxIdleTime: 30,
-//         streamTypes: 2, // audio + video
-//         channelType: 0, // communication
-//         videoStreamType: 0, // high stream
-//         subscribeUidGroup: 0,
-//         transcodingConfig: {
-//           width: 1920,
-//           height: 1080,
-//           bitrate: 3150,
-//           fps: 30,
-//           mixedVideoLayout: 1, // best fit: auto grid based on user count
-//           backgroundColor: "#141414",
-//         },
-//       },
-//       recordingFileConfig: {
-//         avFileType: ["hls", "mp4"],
-//       },
-//       storageConfig: {
-//         vendor: 1, // AWS S3
-//         region: getS3Region(),
-//         bucket: S3_BUCKET,
-//         accessKey: S3_ACCESS_KEY,
-//         secretKey: S3_SECRET_KEY,
-//         fileNamePrefix: S3_FILE_PREFIX.split("/").filter(Boolean),
-//       },
-//     },
-//   };
-//
-//   const res = await fetch(url, {
-//     method: "POST",
-//     headers,
-//     body: JSON.stringify(body),
-//   });
-//
-//   if (!res.ok) {
-//     const text = await res.text();
-//     throw new Error(`Agora start failed (${res.status}): ${text}`);
-//   }
-//
-//   return res.json() as Promise<{ sid: string; resourceId: string }>;
-// }
-
 /** Step 3: Stop recording */
 export async function stop(
   channelName: string,
   uid: string,
   resourceId: string,
   sid: string,
+  mode: "mix" | "individual" = "mix",
 ) {
-  const url = `${BASE_URL}/resourceid/${resourceId}/sid/${sid}/mode/individual/stop`;
+  const url = `${BASE_URL}/resourceid/${resourceId}/sid/${sid}/mode/${mode}/stop`;
 
   const res = await fetch(url, {
     method: "POST",
@@ -222,8 +246,12 @@ export async function stop(
 }
 
 /** Query recording status */
-export async function query(resourceId: string, sid: string) {
-  const url = `${BASE_URL}/resourceid/${resourceId}/sid/${sid}/mode/individual/query`;
+export async function query(
+  resourceId: string,
+  sid: string,
+  mode: "mix" | "individual" = "mix",
+) {
+  const url = `${BASE_URL}/resourceid/${resourceId}/sid/${sid}/mode/${mode}/query`;
 
   const res = await fetch(url, {
     method: "GET",
