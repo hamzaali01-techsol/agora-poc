@@ -167,29 +167,29 @@ export async function startComposite(
           mixedVideoLayout: 3, // Customized Layout
           backgroundColor: "#141414",
           layoutConfig: [
-            // Stage Layout: 1 Large Main + 16 Small Thumbnails (2 columns of 8)
-            // Region 0: Main (75% width)
-            { x_axis: 0.0, y_axis: 0.0, width: 0.75, height: 1.0, alpha: 1.0, render_mode: 1 },
-            
-            // Column 1 (x=0.75, 8 thumbnails)
-            { x_axis: 0.75, y_axis: 0.0, width: 0.125, height: 0.125, alpha: 1.0, render_mode: 1 },
-            { x_axis: 0.75, y_axis: 0.125, width: 0.125, height: 0.125, alpha: 1.0, render_mode: 1 },
-            { x_axis: 0.75, y_axis: 0.25, width: 0.125, height: 0.125, alpha: 1.0, render_mode: 1 },
-            { x_axis: 0.75, y_axis: 0.375, width: 0.125, height: 0.125, alpha: 1.0, render_mode: 1 },
-            { x_axis: 0.75, y_axis: 0.5, width: 0.125, height: 0.125, alpha: 1.0, render_mode: 1 },
-            { x_axis: 0.75, y_axis: 0.625, width: 0.125, height: 0.125, alpha: 1.0, render_mode: 1 },
-            { x_axis: 0.75, y_axis: 0.75, width: 0.125, height: 0.125, alpha: 1.0, render_mode: 1 },
-            { x_axis: 0.75, y_axis: 0.875, width: 0.125, height: 0.125, alpha: 1.0, render_mode: 1 },
-            
-            // Column 2 (x=0.875, 8 thumbnails)
-            { x_axis: 0.875, y_axis: 0.0, width: 0.125, height: 0.125, alpha: 1.0, render_mode: 1 },
-            { x_axis: 0.875, y_axis: 0.125, width: 0.125, height: 0.125, alpha: 1.0, render_mode: 1 },
-            { x_axis: 0.875, y_axis: 0.25, width: 0.125, height: 0.125, alpha: 1.0, render_mode: 1 },
-            { x_axis: 0.875, y_axis: 0.375, width: 0.125, height: 0.125, alpha: 1.0, render_mode: 1 },
-            { x_axis: 0.875, y_axis: 0.5, width: 0.125, height: 0.125, alpha: 1.0, render_mode: 1 },
-            { x_axis: 0.875, y_axis: 0.625, width: 0.125, height: 0.125, alpha: 1.0, render_mode: 1 },
-            { x_axis: 0.875, y_axis: 0.75, width: 0.125, height: 0.125, alpha: 1.0, render_mode: 1 },
-            { x_axis: 0.875, y_axis: 0.875, width: 0.125, height: 0.125, alpha: 1.0, render_mode: 1 }
+            // Equal Grid Layout (4 columns x 5 rows = 20 slots)
+            // Width = 0.25, Height = 0.2
+            { x_axis: 0.00, y_axis: 0.0, width: 0.25, height: 0.2, alpha: 1.0, render_mode: 1 },
+            { x_axis: 0.25, y_axis: 0.0, width: 0.25, height: 0.2, alpha: 1.0, render_mode: 1 },
+            { x_axis: 0.50, y_axis: 0.0, width: 0.25, height: 0.2, alpha: 1.0, render_mode: 1 },
+            { x_axis: 0.75, y_axis: 0.0, width: 0.25, height: 0.2, alpha: 1.0, render_mode: 1 },
+
+            { x_axis: 0.00, y_axis: 0.2, width: 0.25, height: 0.2, alpha: 1.0, render_mode: 1 },
+            { x_axis: 0.25, y_axis: 0.2, width: 0.25, height: 0.2, alpha: 1.0, render_mode: 1 },
+            { x_axis: 0.50, y_axis: 0.2, width: 0.25, height: 0.2, alpha: 1.0, render_mode: 1 },
+            { x_axis: 0.75, y_axis: 0.2, width: 0.25, height: 0.2, alpha: 1.0, render_mode: 1 },
+
+            { x_axis: 0.00, y_axis: 0.4, width: 0.25, height: 0.2, alpha: 1.0, render_mode: 1 },
+            { x_axis: 0.25, y_axis: 0.4, width: 0.25, height: 0.2, alpha: 1.0, render_mode: 1 },
+            { x_axis: 0.50, y_axis: 0.4, width: 0.25, height: 0.2, alpha: 1.0, render_mode: 1 },
+            { x_axis: 0.75, y_axis: 0.4, width: 0.25, height: 0.2, alpha: 1.0, render_mode: 1 },
+
+            { x_axis: 0.00, y_axis: 0.6, width: 0.25, height: 0.2, alpha: 1.0, render_mode: 1 },
+            { x_axis: 0.25, y_axis: 0.6, width: 0.25, height: 0.2, alpha: 1.0, render_mode: 1 },
+            { x_axis: 0.50, y_axis: 0.6, width: 0.25, height: 0.2, alpha: 1.0, render_mode: 1 },
+            { x_axis: 0.75, y_axis: 0.6, width: 0.25, height: 0.2, alpha: 1.0, render_mode: 1 },
+
+            { x_axis: 0.00, y_axis: 0.8, width: 0.25, height: 0.2, alpha: 1.0, render_mode: 1 }
           ],
         },
         
