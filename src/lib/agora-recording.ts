@@ -167,159 +167,29 @@ export async function startComposite(
           mixedVideoLayout: 3, // Customized Layout
           backgroundColor: "#141414",
           layoutConfig: [
-            {
-              // Participant 1 (e.g., Camera) - Left half
-              x_axis: 0.0,
-              y_axis: 0.0,
-              width: 0.5,
-              height: 1.0,
-              alpha: 1.0,
-              render_mode: 1, // 1: Fit (Scaled to fit)
-            },
-            {
-              // Participant 2 (e.g., Screen Share) - Right half
-              x_axis: 0.5,
-              y_axis: 0.0,
-              width: 0.5,
-              height: 1.0,
-              alpha: 1.0,
-              render_mode: 1,
-            },
-            {
-              // Participant 1 (e.g., Camera) - Left half
-              x_axis: 0.0,
-              y_axis: 0.0,
-              width: 0.5,
-              height: 1.0,
-              alpha: 1.0,
-              render_mode: 1, // 1: Fit (Scaled to fit)
-            },
-            {
-              // Participant 1 (e.g., Camera) - Left half
-              x_axis: 0.0,
-              y_axis: 0.0,
-              width: 0.5,
-              height: 1.0,
-              alpha: 1.0,
-              render_mode: 1, // 1: Fit (Scaled to fit)
-            },
-            {
-              // Participant 1 (e.g., Camera) - Left half
-              x_axis: 0.0,
-              y_axis: 0.0,
-              width: 0.5,
-              height: 1.0,
-              alpha: 1.0,
-              render_mode: 1, // 1: Fit (Scaled to fit)
-            },
-            {
-              // Participant 1 (e.g., Camera) - Left half
-              x_axis: 0.0,
-              y_axis: 0.0,
-              width: 0.5,
-              height: 1.0,
-              alpha: 1.0,
-              render_mode: 1, // 1: Fit (Scaled to fit)
-            },
-            {
-              // Participant 1 (e.g., Camera) - Left half
-              x_axis: 0.0,
-              y_axis: 0.0,
-              width: 0.5,
-              height: 1.0,
-              alpha: 1.0,
-              render_mode: 1, // 1: Fit (Scaled to fit)
-            },
-            {
-              // Participant 1 (e.g., Camera) - Left half
-              x_axis: 0.0,
-              y_axis: 0.0,
-              width: 0.5,
-              height: 1.0,
-              alpha: 1.0,
-              render_mode: 1, // 1: Fit (Scaled to fit)
-            },
-            {
-              // Participant 1 (e.g., Camera) - Left half
-              x_axis: 0.0,
-              y_axis: 0.0,
-              width: 0.5,
-              height: 1.0,
-              alpha: 1.0,
-              render_mode: 1, // 1: Fit (Scaled to fit)
-            },
-            {
-              // Participant 1 (e.g., Camera) - Left half
-              x_axis: 0.0,
-              y_axis: 0.0,
-              width: 0.5,
-              height: 1.0,
-              alpha: 1.0,
-              render_mode: 1, // 1: Fit (Scaled to fit)
-            },
-            {
-              // Participant 1 (e.g., Camera) - Left half
-              x_axis: 0.0,
-              y_axis: 0.0,
-              width: 0.5,
-              height: 1.0,
-              alpha: 1.0,
-              render_mode: 1, // 1: Fit (Scaled to fit)
-            },
-            {
-              // Participant 1 (e.g., Camera) - Left half
-              x_axis: 0.0,
-              y_axis: 0.0,
-              width: 0.5,
-              height: 1.0,
-              alpha: 1.0,
-              render_mode: 1, // 1: Fit (Scaled to fit)
-            },
-            {
-              // Participant 1 (e.g., Camera) - Left half
-              x_axis: 0.0,
-              y_axis: 0.0,
-              width: 0.5,
-              height: 1.0,
-              alpha: 1.0,
-              render_mode: 1, // 1: Fit (Scaled to fit)
-            },
-            {
-              // Participant 1 (e.g., Camera) - Left half
-              x_axis: 0.0,
-              y_axis: 0.0,
-              width: 0.5,
-              height: 1.0,
-              alpha: 1.0,
-              render_mode: 1, // 1: Fit (Scaled to fit)
-            },
-            {
-              // Participant 1 (e.g., Camera) - Left half
-              x_axis: 0.0,
-              y_axis: 0.0,
-              width: 0.5,
-              height: 1.0,
-              alpha: 1.0,
-              render_mode: 1, // 1: Fit (Scaled to fit)
-            },
-            {
-              // Participant 1 (e.g., Camera) - Left half
-              x_axis: 0.0,
-              y_axis: 0.0,
-              width: 0.5,
-              height: 1.0,
-              alpha: 1.0,
-              render_mode: 1, // 1: Fit (Scaled to fit)
-            },
-            {
-              // Participant 1 (e.g., Camera) - Left half
-              x_axis: 0.0,
-              y_axis: 0.0,
-              width: 0.5,
-              height: 1.0,
-              alpha: 1.0,
-              render_mode: 1, // 1: Fit (Scaled to fit)
-            },
+            // Stage Layout: 1 Large Main + 16 Small Thumbnails (2 columns of 8)
+            // Region 0: Main (75% width)
+            { x_axis: 0.0, y_axis: 0.0, width: 0.75, height: 1.0, alpha: 1.0, render_mode: 1 },
+            
+            // Column 1 (x=0.75, 8 thumbnails)
+            { x_axis: 0.75, y_axis: 0.0, width: 0.125, height: 0.125, alpha: 1.0, render_mode: 1 },
+            { x_axis: 0.75, y_axis: 0.125, width: 0.125, height: 0.125, alpha: 1.0, render_mode: 1 },
+            { x_axis: 0.75, y_axis: 0.25, width: 0.125, height: 0.125, alpha: 1.0, render_mode: 1 },
+            { x_axis: 0.75, y_axis: 0.375, width: 0.125, height: 0.125, alpha: 1.0, render_mode: 1 },
+            { x_axis: 0.75, y_axis: 0.5, width: 0.125, height: 0.125, alpha: 1.0, render_mode: 1 },
+            { x_axis: 0.75, y_axis: 0.625, width: 0.125, height: 0.125, alpha: 1.0, render_mode: 1 },
+            { x_axis: 0.75, y_axis: 0.75, width: 0.125, height: 0.125, alpha: 1.0, render_mode: 1 },
+            { x_axis: 0.75, y_axis: 0.875, width: 0.125, height: 0.125, alpha: 1.0, render_mode: 1 },
+            
+            // Column 2 (x=0.875, 8 thumbnails)
+            { x_axis: 0.875, y_axis: 0.0, width: 0.125, height: 0.125, alpha: 1.0, render_mode: 1 },
+            { x_axis: 0.875, y_axis: 0.125, width: 0.125, height: 0.125, alpha: 1.0, render_mode: 1 },
+            { x_axis: 0.875, y_axis: 0.25, width: 0.125, height: 0.125, alpha: 1.0, render_mode: 1 },
+            { x_axis: 0.875, y_axis: 0.375, width: 0.125, height: 0.125, alpha: 1.0, render_mode: 1 },
+            { x_axis: 0.875, y_axis: 0.5, width: 0.125, height: 0.125, alpha: 1.0, render_mode: 1 },
+            { x_axis: 0.875, y_axis: 0.625, width: 0.125, height: 0.125, alpha: 1.0, render_mode: 1 },
+            { x_axis: 0.875, y_axis: 0.75, width: 0.125, height: 0.125, alpha: 1.0, render_mode: 1 },
+            { x_axis: 0.875, y_axis: 0.875, width: 0.125, height: 0.125, alpha: 1.0, render_mode: 1 }
           ],
         },
         
