@@ -184,7 +184,142 @@ export async function startComposite(
               height: 1.0,
               alpha: 1.0,
               render_mode: 1,
-            }
+            },
+            {
+              // Participant 1 (e.g., Camera) - Left half
+              x_axis: 0.0,
+              y_axis: 0.0,
+              width: 0.5,
+              height: 1.0,
+              alpha: 1.0,
+              render_mode: 1, // 1: Fit (Scaled to fit)
+            },
+            {
+              // Participant 1 (e.g., Camera) - Left half
+              x_axis: 0.0,
+              y_axis: 0.0,
+              width: 0.5,
+              height: 1.0,
+              alpha: 1.0,
+              render_mode: 1, // 1: Fit (Scaled to fit)
+            },
+            {
+              // Participant 1 (e.g., Camera) - Left half
+              x_axis: 0.0,
+              y_axis: 0.0,
+              width: 0.5,
+              height: 1.0,
+              alpha: 1.0,
+              render_mode: 1, // 1: Fit (Scaled to fit)
+            },
+            {
+              // Participant 1 (e.g., Camera) - Left half
+              x_axis: 0.0,
+              y_axis: 0.0,
+              width: 0.5,
+              height: 1.0,
+              alpha: 1.0,
+              render_mode: 1, // 1: Fit (Scaled to fit)
+            },
+            {
+              // Participant 1 (e.g., Camera) - Left half
+              x_axis: 0.0,
+              y_axis: 0.0,
+              width: 0.5,
+              height: 1.0,
+              alpha: 1.0,
+              render_mode: 1, // 1: Fit (Scaled to fit)
+            },
+            {
+              // Participant 1 (e.g., Camera) - Left half
+              x_axis: 0.0,
+              y_axis: 0.0,
+              width: 0.5,
+              height: 1.0,
+              alpha: 1.0,
+              render_mode: 1, // 1: Fit (Scaled to fit)
+            },
+            {
+              // Participant 1 (e.g., Camera) - Left half
+              x_axis: 0.0,
+              y_axis: 0.0,
+              width: 0.5,
+              height: 1.0,
+              alpha: 1.0,
+              render_mode: 1, // 1: Fit (Scaled to fit)
+            },
+            {
+              // Participant 1 (e.g., Camera) - Left half
+              x_axis: 0.0,
+              y_axis: 0.0,
+              width: 0.5,
+              height: 1.0,
+              alpha: 1.0,
+              render_mode: 1, // 1: Fit (Scaled to fit)
+            },
+            {
+              // Participant 1 (e.g., Camera) - Left half
+              x_axis: 0.0,
+              y_axis: 0.0,
+              width: 0.5,
+              height: 1.0,
+              alpha: 1.0,
+              render_mode: 1, // 1: Fit (Scaled to fit)
+            },
+            {
+              // Participant 1 (e.g., Camera) - Left half
+              x_axis: 0.0,
+              y_axis: 0.0,
+              width: 0.5,
+              height: 1.0,
+              alpha: 1.0,
+              render_mode: 1, // 1: Fit (Scaled to fit)
+            },
+            {
+              // Participant 1 (e.g., Camera) - Left half
+              x_axis: 0.0,
+              y_axis: 0.0,
+              width: 0.5,
+              height: 1.0,
+              alpha: 1.0,
+              render_mode: 1, // 1: Fit (Scaled to fit)
+            },
+            {
+              // Participant 1 (e.g., Camera) - Left half
+              x_axis: 0.0,
+              y_axis: 0.0,
+              width: 0.5,
+              height: 1.0,
+              alpha: 1.0,
+              render_mode: 1, // 1: Fit (Scaled to fit)
+            },
+            {
+              // Participant 1 (e.g., Camera) - Left half
+              x_axis: 0.0,
+              y_axis: 0.0,
+              width: 0.5,
+              height: 1.0,
+              alpha: 1.0,
+              render_mode: 1, // 1: Fit (Scaled to fit)
+            },
+            {
+              // Participant 1 (e.g., Camera) - Left half
+              x_axis: 0.0,
+              y_axis: 0.0,
+              width: 0.5,
+              height: 1.0,
+              alpha: 1.0,
+              render_mode: 1, // 1: Fit (Scaled to fit)
+            },
+            {
+              // Participant 1 (e.g., Camera) - Left half
+              x_axis: 0.0,
+              y_axis: 0.0,
+              width: 0.5,
+              height: 1.0,
+              alpha: 1.0,
+              render_mode: 1, // 1: Fit (Scaled to fit)
+            },
           ],
         },
         
